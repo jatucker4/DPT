@@ -133,11 +133,11 @@ def run(input_path, output_path, model_path, model_type="dpt_hybrid", optimize=T
 
         img = util.io.read_image(img_name)
 
-        if args.kitti_crop is True:
-            height, width, _ = img.shape
-            top = height - 352
-            left = (width - 1216) // 2
-            img = img[top : top + 352, left : left + 1216, :]
+        # if kitti_crop is True:
+        #     height, width, _ = img.shape
+        #     top = height - 352
+        #     left = (width - 1216) // 2
+        #     img = img[top : top + 352, left : left + 1216, :]
 
         img_input = transform({"image": img})["image"]
 
@@ -171,68 +171,26 @@ def run(input_path, output_path, model_path, model_type="dpt_hybrid", optimize=T
         filename = os.path.join(
             output_path, os.path.splitext(os.path.basename(img_name))[0]
         )
-        util.io.write_depth(filename, prediction, bits=2, absolute_depth=args.absolute_depth)
+        util.io.write_depth(filename, prediction, bits=2, absolute_depth=False)
 
     print("finished")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-i", "--input_path", default="input", help="folder with input images"
-    )
-
-    parser.add_argument(
-        "-o",
-        "--output_path",
-        default="output_monodepth",
-        help="folder for output images",
-    )
-
-    parser.add_argument(
-        "-m", "--model_weights", default=None, help="path to model weights"
-    )
-
-    parser.add_argument(
-        "-t",
-        "--model_type",
-        default="dpt_hybrid",
-        help="model type [dpt_large|dpt_hybrid|midas_v21]",
-    )
-
-    parser.add_argument("--kitti_crop", dest="kitti_crop", action="store_true")
-    parser.add_argument("--absolute_depth", dest="absolute_depth", action="store_true")
-
-    parser.add_argument("--optimize", dest="optimize", action="store_true")
-    parser.add_argument("--no-optimize", dest="optimize", action="store_false")
-
-    parser.set_defaults(optimize=True)
-    parser.set_defaults(kitti_crop=False)
-    parser.set_defaults(absolute_depth=False)
-
-    args = parser.parse_args()
-
-    default_models = {
-        "midas_v21": "weights/midas_v21-f6b98070.pt",
-        "dpt_large": "weights/dpt_large-midas-2f21e586.pt",
-        "dpt_hybrid": "weights/dpt_hybrid-midas-501f0c75.pt",
-        "dpt_hybrid_kitti": "weights/dpt_hybrid_kitti-cb926ef4.pt",
-        "dpt_hybrid_nyu": "weights/dpt_hybrid_nyu-2ce69ec7.pt",
-    }
-
-    if args.model_weights is None:
-        args.model_weights = default_models[args.model_type]
-
     # set torch options
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
 
     # compute depth maps
+    input_path = "/home/jatucker/ego_imitiation/meta_data/stacking_data/mps_block_stacking_1_vrs/images"
+    output_path = "/home/jatucker/ego_imitiation/meta_data/stacking_data/mps_block_stacking_1_vrs/depth"
+    weights = "/home/jatucker/ego_imitiation/DPT/weights/dpt_large-midas-2f21e586.pt"
+    model_type = "dpt_large"
+    optimize=True
     run(
-        args.input_path,
-        args.output_path,
-        args.model_weights,
-        args.model_type,
-        args.optimize,
+        input_path,
+        output_path,
+        weights,
+        model_type,
+        optimize,
     )
